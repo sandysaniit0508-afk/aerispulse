@@ -10,7 +10,7 @@ import { ActionPlanSchema } from '../domain/schemas';
 import { FallbackActionPlanService } from './fallback-service';
 
 export class GeminiService {
-  private static getClient(): GoogleGenerativeAI | null {
+  public static getClient(): GoogleGenerativeAI | null {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey || apiKey.trim() === '') {
       return null;

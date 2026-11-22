@@ -53,7 +53,7 @@ describe('GeminiService Mocked SDK Live Execution', () => {
       ],
     });
 
-    vi.spyOn(GeminiService as any, 'getClient').mockReturnValue({
+    vi.spyOn(GeminiService as unknown as { getClient: () => unknown }, 'getClient').mockReturnValue({
       getGenerativeModel: () => ({
         generateContent: async () => ({
           response: {
@@ -81,7 +81,7 @@ describe('GeminiService Mocked SDK Live Execution', () => {
       invalidKey: 'missing summary and items',
     });
 
-    vi.spyOn(GeminiService as any, 'getClient').mockReturnValue({
+    vi.spyOn(GeminiService as unknown as { getClient: () => unknown }, 'getClient').mockReturnValue({
       getGenerativeModel: () => ({
         generateContent: async () => ({
           response: {
@@ -109,7 +109,7 @@ describe('GeminiService Mocked SDK Live Execution', () => {
       yield { text: () => 'moderate today.' };
     }
 
-    vi.spyOn(GeminiService as any, 'getClient').mockReturnValue({
+    vi.spyOn(GeminiService as unknown as { getClient: () => unknown }, 'getClient').mockReturnValue({
       getGenerativeModel: () => ({
         generateContentStream: async () => ({
           stream: mockStreamGenerator(),

@@ -142,7 +142,7 @@ describe('GeminiService Branch Coverage', () => {
   it('covers live SDK streaming error catch branch', async () => {
     process.env.GEMINI_API_KEY = 'mock-key';
 
-    vi.spyOn(GeminiService as any, 'getClient').mockReturnValue({
+    vi.spyOn(GeminiService as unknown as { getClient: () => unknown }, 'getClient').mockReturnValue({
       getGenerativeModel: () => ({
         generateContentStream: async () => ({
           stream: (async function* () {
@@ -175,7 +175,7 @@ describe('GeminiService Branch Coverage', () => {
   it('covers live SDK model initialization throwing exception', async () => {
     process.env.GEMINI_API_KEY = 'mock-key';
 
-    vi.spyOn(GeminiService as any, 'getClient').mockReturnValue({
+    vi.spyOn(GeminiService as unknown as { getClient: () => unknown }, 'getClient').mockReturnValue({
       getGenerativeModel: () => {
         throw new Error('Model init failed');
       },
