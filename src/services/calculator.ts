@@ -11,6 +11,27 @@ import {
   SimulatorInputs,
   SimulatorOutputs,
 } from '../domain/types';
+import {
+  RESTING_VENTILATION_RATE_M3_HR,
+  LIGHT_ACTIVITY_VENTILATION_RATE_M3_HR,
+  MASK_EFFICIENCY_NONE,
+  MASK_EFFICIENCY_CLOTH,
+  MASK_EFFICIENCY_N95,
+  HEPA_FILTER_ACTIVE_EFFICIENCY,
+  HEPA_FILTER_PASSIVE_EFFICIENCY,
+  WHO_PM25_COUNTERFACTUAL_UG_M3,
+  BURNETT_GEMM_BETA_COEFFICIENT,
+  CREI_PM25_NORMALIZATION_UG_M3,
+  CREI_PM25_WEIGHT_PERCENT,
+  CREI_NO2_NORMALIZATION_UG_M3,
+  CREI_NO2_WEIGHT_PERCENT,
+  DEFRA_CAR_EMISSION_FACTOR,
+  DEFRA_TWO_WHEELER_EMISSION_FACTOR,
+  DEFRA_METRO_EMISSION_FACTOR,
+  DEFRA_BICYCLE_EMISSION_FACTOR,
+  BASELINE_MONTHLY_HEALTH_BURDEN_INR,
+  INR_TO_USD_EXCHANGE_RATE,
+} from './calculator-constants';
 
 interface Breakpoint {
   cLow: number;
@@ -138,14 +159,14 @@ export function calculateInhaledDosage(
   const outdoorHours = Math.max(0, Math.min(24, hoursOutdoor));
   const indoorHours = Math.max(0, 24 - outdoorHours);
 
-  // Outdoor ventilation rate: 1.5 m³/hr average activity
+  // Outdoor ventilation rate: light activity average
   const outdoorInhaled =
-    ambientPm25 * 1.5 * outdoorHours * (1 - maskEfficiency);
+    ambientPm25 * LIGHT_ACTIVITY_VENTILATION_RATE_M3_HR * outdoorHours * (1 - maskEfficiency);
 
   // Indoor concentration: ambient modulated by HEPA filtration
   const indoorConc = ambientPm25 * (1 - hepaEfficiency);
-  // Indoor resting ventilation rate: 0.55 m³/hr
-  const indoorInhaled = indoorConc * 0.55 * indoorHours;
+  // Indoor resting ventilation rate
+  const indoorInhaled = indoorConc * RESTING_VENTILATION_RATE_M3_HR * indoorHours;
 
   return Math.round((outdoorInhaled + indoorInhaled) * 10) / 10;
 }
@@ -154,8 +175,8 @@ export function calculateInhaledDosage(
  * Chronic Respiratory Exposure Index (CREI) scaled 0 - 100 (Burnett et al. 2018)
  */
 export function calculateCREI(pm25: number, no2: number): number {
-  const pmComponent = (Math.min(pm25, 300) / 300) * 70;
-  const no2Component = (Math.min(no2, 200) / 200) * 30;
+  const pmComponent = (Math.min(pm25, CREI_PM25_NORMALIZATION_UG_M3) / CREI_PM25_NORMALIZATION_UG_M3) * CREI_PM25_WEIGHT_PERCENT;
+  const no2Component = (Math.min(no2, CREI_NO2_NORMALIZATION_UG_M3) / CREI_NO2_NORMALIZATION_UG_M3) * CREI_NO2_WEIGHT_PERCENT;
   return Math.min(100, Math.round(pmComponent + no2Component));
 }
 
@@ -163,10 +184,8 @@ export function calculateCREI(pm25: number, no2: number): number {
  * Relative Risk Increase for acute cardiovascular/respiratory exacerbation (%)
  */
 export function calculateRelativeRiskIncrease(pm25: number): number {
-  const counterfactual = 5.0; // WHO annual threshold (µg/m³)
-  const delta = Math.max(0, pm25 - counterfactual);
-  const beta = 0.0062;
-  const rr = Math.exp(beta * delta);
+  const delta = Math.max(0, pm25 - WHO_PM25_COUNTERFACTUAL_UG_M3);
+  const rr = Math.exp(BURNETT_GEMM_BETA_COEFFICIENT * delta);
   return Math.round((rr - 1) * 1000) / 10;
 }
 
@@ -178,14 +197,14 @@ export function calculateCommuteCarbon(
   distanceKm: number
 ): { baselineCarKg: number; actualKg: number; savedKg: number } {
   const factors: Record<SimulatorInputs['commuteMode'], number> = {
-    car: 0.192,
-    twoWheeler: 0.103,
-    metro: 0.028,
-    bicycle: 0.0,
+    car: DEFRA_CAR_EMISSION_FACTOR,
+    twoWheeler: DEFRA_TWO_WHEELER_EMISSION_FACTOR,
+    metro: DEFRA_METRO_EMISSION_FACTOR,
+    bicycle: DEFRA_BICYCLE_EMISSION_FACTOR,
   };
 
   const baselineCarKg = Math.round(distanceKm * factors.car * 100) / 100;
-  const actualKg = Math.round(distanceKm * (factors[mode] ?? 0.192) * 100) / 100;
+  const actualKg = Math.round(distanceKm * (factors[mode] ?? DEFRA_CAR_EMISSION_FACTOR) * 100) / 100;
   const savedKg = Math.max(0, Math.round((baselineCarKg - actualKg) * 100) / 100);
 
   return { baselineCarKg, actualKg, savedKg };
@@ -197,12 +216,8 @@ export function calculateCommuteCarbon(
 export function calculateHealthSavings(
   inhaledDosageReductionPercent: number
 ): { monthlyInr: number; monthlyUsd: number } {
-  // Baseline monthly outpatient medication + lost productivity burden in high-AQI metros: ~₹2,200 ($26.50)
-  const baselineCostInr = 2200;
-  const inrToUsdRate = 0.012;
-
-  const monthlyInr = Math.round((baselineCostInr * (inhaledDosageReductionPercent / 100)));
-  const monthlyUsd = Math.round(monthlyInr * inrToUsdRate * 10) / 10;
+  const monthlyInr = Math.round((BASELINE_MONTHLY_HEALTH_BURDEN_INR * (inhaledDosageReductionPercent / 100)));
+  const monthlyUsd = Math.round(monthlyInr * INR_TO_USD_EXCHANGE_RATE * 10) / 10;
 
   return { monthlyInr, monthlyUsd };
 }
@@ -215,13 +230,13 @@ export function calculateSimulation(
   ambientPm25: number
 ): SimulatorOutputs {
   const maskEfficiencyMap: Record<SimulatorInputs['maskGrade'], number> = {
-    none: 0.0,
-    cloth: 0.35,
-    n95: 0.95,
+    none: MASK_EFFICIENCY_NONE,
+    cloth: MASK_EFFICIENCY_CLOTH,
+    n95: MASK_EFFICIENCY_N95,
   };
 
   const maskEff = maskEfficiencyMap[inputs.maskGrade];
-  const hepaEff = inputs.hepaFilterEnabled ? 0.85 : 0.15;
+  const hepaEff = inputs.hepaFilterEnabled ? HEPA_FILTER_ACTIVE_EFFICIENCY : HEPA_FILTER_PASSIVE_EFFICIENCY;
 
   // Actual Inhaled Dosage with selected protections
   const actualInhaled = calculateInhaledDosage(

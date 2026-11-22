@@ -8,6 +8,14 @@ import { TelemetryData, PollutantReadings } from '../domain/types';
 import { calculateCompositeAqi, getAirQualityCategory } from './calculator';
 import { ValidationService } from './validation-service';
 import { globalTelemetryCache } from './telemetry-cache';
+import {
+  OPEN_METEO_BASE_URL,
+  CAMS_FETCH_TIMEOUT_MS,
+  STATION_AQI_AMPLIFICATION_FACTOR,
+  EUROPEAN_AQI_CONVERSION_RATIO,
+  BASELINE_STATION_AMPLIFICATION_FACTOR,
+  BASELINE_EUROPEAN_AQI_RATIO,
+} from './telemetry-constants';
 
 interface OpenMeteoCurrentResponse {
   current?: {
@@ -44,10 +52,10 @@ export class TelemetryService {
     }
 
     try {
-      const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone,european_aqi,us_aqi&timezone=auto`;
+      const url = `${OPEN_METEO_BASE_URL}?latitude=${lat}&longitude=${lon}&current=pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone,european_aqi,us_aqi&timezone=auto`;
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 6000);
+      const timeoutId = setTimeout(() => controller.abort(), CAMS_FETCH_TIMEOUT_MS);
 
       const response = await fetch(url, {
         signal: controller.signal,
@@ -81,8 +89,7 @@ export class TelemetryService {
       const reportedUsAqi = current.us_aqi ?? computedAqi;
 
       // Ground station benchmark simulation for multi-source verification:
-      // Regulatory monitors typically experience localized street-canyon amplification (+10% to +35%)
-      const stationAqi = Math.round(reportedUsAqi * 1.15);
+      const stationAqi = Math.round(reportedUsAqi * STATION_AQI_AMPLIFICATION_FACTOR);
       const validation = ValidationService.validate(reportedUsAqi, stationAqi);
 
       const telemetry: TelemetryData = {
@@ -93,7 +100,7 @@ export class TelemetryService {
         timestamp: current.time ?? new Date().toISOString(),
         pollutants,
         usAqi: reportedUsAqi,
-        europeanAqi: current.european_aqi ?? Math.min(100, Math.round(reportedUsAqi * 0.7)),
+        europeanAqi: current.european_aqi ?? Math.min(100, Math.round(reportedUsAqi * EUROPEAN_AQI_CONVERSION_RATIO)),
         category: getAirQualityCategory(reportedUsAqi),
         dominantPollutant: composite.dominantPollutant,
         confidenceScore: validation.confidenceScore,
@@ -142,7 +149,7 @@ export class TelemetryService {
     };
 
     const composite = calculateCompositeAqi(pollutants);
-    const stationAqi = Math.round(composite.aqi * 1.18);
+    const stationAqi = Math.round(composite.aqi * BASELINE_STATION_AMPLIFICATION_FACTOR);
     const validation = ValidationService.validate(composite.aqi, stationAqi);
 
     return {
@@ -153,7 +160,7 @@ export class TelemetryService {
       timestamp: new Date().toISOString(),
       pollutants,
       usAqi: composite.aqi,
-      europeanAqi: Math.min(100, Math.round(composite.aqi * 0.65)),
+      europeanAqi: Math.min(100, Math.round(composite.aqi * BASELINE_EUROPEAN_AQI_RATIO)),
       category: getAirQualityCategory(composite.aqi),
       dominantPollutant: composite.dominantPollutant,
       confidenceScore: validation.confidenceScore,
