@@ -17,6 +17,12 @@ export class TelemetryCache<T> {
     this.ttlMs = ttlMs;
   }
 
+  /**
+   * Retrieves cached entry by key, returning staleness status.
+   * 
+   * @param key - Cache lookup key
+   * @returns Cache retrieval record containing data (or null) and isStale boolean flag
+   */
   public get(key: string): { data: T | null; isStale: boolean } {
     const entry = this.cache.get(key);
     if (!entry) {
@@ -32,6 +38,12 @@ export class TelemetryCache<T> {
     };
   }
 
+  /**
+   * Inserts or updates an entry in the TTL cache.
+   * 
+   * @param key - Cache storage key
+   * @param data - Generic payload to store
+   */
   public set(key: string, data: T): void {
     const now = Date.now();
     this.cache.set(key, {
@@ -41,10 +53,16 @@ export class TelemetryCache<T> {
     });
   }
 
+  /**
+   * Empties all stored records from the in-memory cache.
+   */
   public clear(): void {
     this.cache.clear();
   }
 
+  /**
+   * Returns total count of active cache keys.
+   */
   public size(): number {
     return this.cache.size;
   }

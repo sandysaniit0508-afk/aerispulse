@@ -19,6 +19,12 @@ export class SlidingWindowRateLimiter {
     this.windowMs = windowMs;
   }
 
+  /**
+   * Evaluates if incoming IP address is within request rate bounds.
+   * 
+   * @param ip - Client IP identifier
+   * @returns RateLimitResult with allowed boolean, remaining attempts, and reset cooldown
+   */
   public check(ip: string): RateLimitResult {
     const now = Date.now();
     const windowStart = now - this.windowMs;

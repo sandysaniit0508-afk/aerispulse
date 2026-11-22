@@ -8,7 +8,11 @@ import { MultiSourceValidation, SafetyElevationLevel } from '../domain/types';
 
 export class ValidationService {
   /**
-   * Cross-reference model AQI with ground-station sensor telemetry
+   * Cross-references primary model AQI with ground-station regulatory monitor telemetry.
+   * 
+   * @param modelAqi - Primary Copernicus atmospheric model US AQI
+   * @param stationAqi - Physical ground-station regulatory monitor US AQI
+   * @returns MultiSourceValidation result with computed discrepancy, safety elevation, and confidence score
    */
   public static validate(
     modelAqi: number,

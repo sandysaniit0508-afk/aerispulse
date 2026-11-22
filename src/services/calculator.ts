@@ -83,6 +83,14 @@ const SO2_BREAKPOINTS: Breakpoint[] = [
   { cLow: 305, cHigh: 604, iLow: 201, iHigh: 300 },
 ];
 
+/**
+ * Calculates piecewise linear AQI sub-index for a single pollutant according to US EPA standards.
+ * 
+ * @param concentration - Truncated ambient pollutant concentration in µg/m³ (or mg/m³ for CO)
+ * @param breakpoints - Breakpoint lookup table defining concentration and AQI bounds
+ * @returns Computed AQI sub-index rounded to nearest integer
+ * @see docs/METHODOLOGY.md - Section 1: Multi-Pollutant US EPA Air Quality Index (AQI) Calculation
+ */
 export function calculateSubIndex(concentration: number, breakpoints: Breakpoint[]): number {
   if (concentration <= 0) return 0;
 
@@ -105,6 +113,13 @@ export function calculateSubIndex(concentration: number, breakpoints: Breakpoint
   return 0;
 }
 
+/**
+ * Maps numerical US AQI score to standardized EPA public health warning category bands.
+ * 
+ * @param aqi - Numerical Air Quality Index (0 - 500)
+ * @returns Standard EPA descriptor category ('Good' | 'Moderate' | 'Unhealthy for Sensitive Groups' | 'Unhealthy' | 'Very Unhealthy' | 'Hazardous')
+ * @see docs/METHODOLOGY.md - Section 1: Multi-Pollutant US EPA Air Quality Index (AQI) Calculation
+ */
 export function getAirQualityCategory(aqi: number): AirQualityCategory {
   if (aqi <= 50) return 'Good';
   if (aqi <= 100) return 'Moderate';
@@ -114,6 +129,13 @@ export function getAirQualityCategory(aqi: number): AirQualityCategory {
   return 'Hazardous';
 }
 
+/**
+ * Computes multi-pollutant composite AQI governed by the maximum critical pollutant sub-index.
+ * 
+ * @param pollutants - Object containing PM2.5, PM10, NO2, SO2, O3, and CO ambient concentrations
+ * @returns Object containing the governing AQI, dominant pollutant identifier, and individual sub-indices
+ * @see docs/METHODOLOGY.md - Section 1: Multi-Pollutant US EPA Air Quality Index (AQI) Calculation
+ */
 export function calculateCompositeAqi(pollutants: PollutantReadings): {
   aqi: number;
   dominantPollutant: keyof PollutantReadings;
@@ -147,8 +169,14 @@ export function calculateCompositeAqi(pollutants: PollutantReadings): {
 }
 
 /**
- * Inhaled Particulate Matter (PM2.5) Dosage (ICRP 1994)
- * Ventilation: Resting = 0.48 m³/hr, Light = 1.2 m³/hr, Exercise = 3.0 m³/hr.
+ * Estimates human inhaled PM2.5 dosage mass using International Commission on Radiological Protection equations.
+ * 
+ * @param ambientPm25 - Ambient fine particulate concentration in µg/m³
+ * @param hoursOutdoor - Total exposure duration spent in unconditioned outdoor ambient air
+ * @param maskEfficiency - Fractional filtration efficiency of personal respirator (0.0 to 0.95)
+ * @param hepaEfficiency - Fractional filtration efficiency of indoor air purifier (0.0 to 0.85)
+ * @returns Estimated total deposited PM2.5 mass in micrograms (µg)
+ * @see docs/METHODOLOGY.md - Section 2: Inhaled Particulate Matter Dosage Formulation
  */
 export function calculateInhaledDosage(
   ambientPm25: number,
@@ -172,7 +200,12 @@ export function calculateInhaledDosage(
 }
 
 /**
- * Chronic Respiratory Exposure Index (CREI) scaled 0 - 100 (Burnett et al. 2018)
+ * Calculates Chronic Respiratory Exposure Index (CREI) scaled from 0 to 100.
+ * 
+ * @param pm25 - Ambient fine particulate concentration in µg/m³
+ * @param no2 - Ambient nitrogen dioxide concentration in µg/m³
+ * @returns Normalized health exposure index between 0 and 100
+ * @see docs/METHODOLOGY.md - Section 3: Epidemiological Relative Risk & Chronic Respiratory Exposure Index (CREI)
  */
 export function calculateCREI(pm25: number, no2: number): number {
   const pmComponent = (Math.min(pm25, CREI_PM25_NORMALIZATION_UG_M3) / CREI_PM25_NORMALIZATION_UG_M3) * CREI_PM25_WEIGHT_PERCENT;
@@ -181,7 +214,11 @@ export function calculateCREI(pm25: number, no2: number): number {
 }
 
 /**
- * Relative Risk Increase for acute cardiovascular/respiratory exacerbation (%)
+ * Computes acute cardiovascular and respiratory exacerbation relative risk increase (%).
+ * 
+ * @param pm25 - Ambient fine particulate concentration in µg/m³
+ * @returns Percentage increase in acute cardiopulmonary exacerbation probability
+ * @see docs/METHODOLOGY.md - Section 3: Epidemiological Relative Risk & Chronic Respiratory Exposure Index (CREI)
  */
 export function calculateRelativeRiskIncrease(pm25: number): number {
   const delta = Math.max(0, pm25 - WHO_PM25_COUNTERFACTUAL_UG_M3);
@@ -190,7 +227,12 @@ export function calculateRelativeRiskIncrease(pm25: number): number {
 }
 
 /**
- * Commute Carbon Footprint & Delta (DEFRA 2023)
+ * Computes commute modal carbon emission footprint and savings relative to passenger car baseline.
+ * 
+ * @param mode - Selected transit modality ('car' | 'twoWheeler' | 'metro' | 'bicycle')
+ * @param distanceKm - Round-trip daily commute distance in kilometers
+ * @returns Object containing baseline carbon, actual emissions, and avoided carbon mass in kg
+ * @see docs/METHODOLOGY.md - Section 4: Modal Commute Carbon Emission Abatement
  */
 export function calculateCommuteCarbon(
   mode: SimulatorInputs['commuteMode'],
@@ -211,7 +253,11 @@ export function calculateCommuteCarbon(
 }
 
 /**
- * Economic Healthcare Cost Savings (WHO Environmental Burden of Disease)
+ * Calculates monthly healthcare cost savings from inhaled particulate exposure reduction.
+ * 
+ * @param inhaledDosageReductionPercent - Percentage reduction in inhaled particulate deposition
+ * @returns Estimated monthly economic savings in INR and USD
+ * @see docs/METHODOLOGY.md - Section 5: Economic Health Savings & Acute Symptom Mitigation
  */
 export function calculateHealthSavings(
   inhaledDosageReductionPercent: number
@@ -223,7 +269,12 @@ export function calculateHealthSavings(
 }
 
 /**
- * Comprehensive Simulator Calculation Engine
+ * Evaluates lifestyle and protective behavior permutations in real-time.
+ * 
+ * @param inputs - User-selected transit mode, commute distance, mask grade, and HEPA filter status
+ * @param ambientPm25 - Current ambient PM2.5 level in µg/m³
+ * @returns Quantified multi-dimensional impact metrics
+ * @see docs/METHODOLOGY.md - Sections 2, 4, and 5
  */
 export function calculateSimulation(
   inputs: SimulatorInputs,
@@ -280,7 +331,11 @@ export function calculateSimulation(
 }
 
 /**
- * Generate Comprehensive Domain Metrics for Given Telemetry
+ * Generates an aggregated suite of physiological and environmental metrics for active telemetry.
+ * 
+ * @param pollutants - Object containing current ambient pollutant readings
+ * @returns Comprehensive calculation metrics suite
+ * @see docs/METHODOLOGY.md - Sections 1 through 5
  */
 export function generateMetrics(pollutants: PollutantReadings): CalculationMetrics {
   const dosage = calculateInhaledDosage(pollutants.pm25, 2, 0, 0.15);
