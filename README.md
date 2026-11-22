@@ -136,6 +136,19 @@ cp .env.example .env.local
 GEMINI_API_KEY="your-gemini-api-key"
 ```
 
+#### Environment Variables Reference (matches `.env.example`)
+| Variable | Required | Default | Description |
+| :--- | :---: | :---: | :--- |
+| `GEMINI_API_KEY` | Optional | `""` | Google Gemini API key for live LLM action plans and grounded streaming chat. Falls back to deterministic rules if omitted. |
+| `GEMINI_MODEL` | Optional | `"gemini-1.5-flash"` | Target Google Gemini model version. |
+| `GROQ_API_KEY` | Optional | `""` | Optional secondary candidate LLM failover. |
+| `OPENAI_API_KEY` | Optional | `""` | Optional tertiary candidate LLM failover. |
+| `NEXT_PUBLIC_APP_URL`| Optional | `"http://localhost:3000"` | Canonical application origin URL for absolute asset resolution. |
+| `NODE_ENV` | Optional | `"development"` | Node runtime environment (`development` / `production`). |
+| `RATE_LIMIT_MAX_REQUESTS` | Optional | `30` | Max API requests permitted per IP per sliding window. |
+| `RATE_LIMIT_WINDOW_MS` | Optional | `60000` | Rate limiter sliding window duration in milliseconds (60s). |
+| `TELEMETRY_CACHE_TTL_MS` | Optional | `300000` | In-memory SWR telemetry cache expiration TTL in milliseconds (5 min). |
+
 ### Running the Development Server
 ```bash
 npm run dev

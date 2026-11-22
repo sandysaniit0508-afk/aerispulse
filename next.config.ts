@@ -1,4 +1,17 @@
 import type { NextConfig } from 'next';
+import fs from 'node:fs';
+import path from 'node:path';
+
+// Pre-create output directory trees to prevent Windows parallel webpack mkdir race conditions (EPERM)
+const apiRoutes = ['chat', 'health', 'plan', 'simulate', 'telemetry'];
+for (const route of apiRoutes) {
+  try {
+    fs.mkdirSync(path.join(process.cwd(), '.next/server/app/api', route), { recursive: true });
+    fs.mkdirSync(path.join(process.cwd(), '.next/static/chunks/app/api', route), { recursive: true });
+  } catch {
+    // Ignore if directory already exists
+  }
+}
 
 const isProduction = process.env.NODE_ENV === 'production';
 
