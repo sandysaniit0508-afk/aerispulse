@@ -15,7 +15,7 @@ PRODUCTION DEPLOYMENT URL:
 https://aerispulse.vercel.app
 
 PUBLIC GITHUB REPOSITORY:
-https://github.com/sanjaicreator/aerispulse
+https://github.com/sandysaniit0508-afk/aerispulse
 
 DEMO WALKTHROUGH VIDEO LINK:
 https://aerispulse.vercel.app/walkthrough.mp4 (High-Definition 1080p H.264)

@@ -23,7 +23,7 @@ Here is what went into building this at production grade:
 
 Check out the live deployment and open-source repository:
 🌐 Live Application: https://aerispulse.vercel.app
-📦 GitHub Repository: https://github.com/sanjaicreator/aerispulse
+📦 GitHub Repository: https://github.com/sandysaniit0508-afk/aerispulse
 📺 Demo Walkthrough: https://aerispulse.vercel.app/walkthrough.mp4
 
 #FullStack #NextJS15 #React19 #TypeScript #DevOps #ClimateTech #AirQuality #GenAI #GoogleGemini #Accessibility #SoftwareEngineering

@@ -1,10 +1,10 @@
 # AerisPulse — Urban Air Quality & Climate Health Intelligence System
 
-[![CI Quality Gate](https://github.com/sanjaicreator/aerispulse/actions/workflows/ci.yml/badge.svg)](https://github.com/sanjaicreator/aerispulse/actions/workflows/ci.yml)
-[![Tests Passing](https://img.shields.io/badge/Tests-181%20Passed-10B981.svg)](https://github.com/sanjaicreator/aerispulse)
-[![Line Coverage](https://img.shields.io/badge/Coverage-95.5%25-brightgreen.svg)](https://github.com/sanjaicreator/aerispulse)
-[![WCAG 2.2 AA](https://img.shields.io/badge/Accessibility-WCAG%202.2%20AA%20(0%20Violations)-blue.svg)](https://github.com/sanjaicreator/aerispulse)
-[![Bundle Size](https://img.shields.io/badge/First%20Load%20JS-119%20kB-blueviolet.svg)](https://github.com/sanjaicreator/aerispulse)
+[![CI Quality Gate](https://github.com/sandysaniit0508-afk/aerispulse/actions/workflows/ci.yml/badge.svg)](https://github.com/sandysaniit0508-afk/aerispulse/actions/workflows/ci.yml)
+[![Tests Passing](https://img.shields.io/badge/Tests-181%20Passed-10B981.svg)](https://github.com/sandysaniit0508-afk/aerispulse)
+[![Line Coverage](https://img.shields.io/badge/Coverage-95.5%25-brightgreen.svg)](https://github.com/sandysaniit0508-afk/aerispulse)
+[![WCAG 2.2 AA](https://img.shields.io/badge/Accessibility-WCAG%202.2%20AA%20(0%20Violations)-blue.svg)](https://github.com/sandysaniit0508-afk/aerispulse)
+[![Bundle Size](https://img.shields.io/badge/First%20Load%20JS-119%20kB-blueviolet.svg)](https://github.com/sandysaniit0508-afk/aerispulse)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > **"The LLM explains; code calculates."**  
@@ -12,7 +12,7 @@
 
 🌐 **Production Deployment:** [https://aerispulse.vercel.app](https://aerispulse.vercel.app)  
 📺 **HD Walkthrough Video:** [https://aerispulse.vercel.app/walkthrough.mp4](https://aerispulse.vercel.app/walkthrough.mp4)  
-📦 **GitHub Repository:** [https://github.com/sanjaicreator/aerispulse](https://github.com/sanjaicreator/aerispulse)
+📦 **GitHub Repository:** [https://github.com/sandysaniit0508-afk/aerispulse](https://github.com/sandysaniit0508-afk/aerispulse)
 
 ---
 
@@ -109,7 +109,7 @@ Full mathematical derivations and equations are documented in [`docs/METHODOLOGY
 
 ### Installation
 ```bash
-git clone https://github.com/sanjaicreator/aerispulse.git
+git clone https://github.com/sandysaniit0508-afk/aerispulse.git
 cd aerispulse
 npm install
 ```
