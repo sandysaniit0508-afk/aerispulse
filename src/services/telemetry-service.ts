@@ -57,22 +57,44 @@ export class TelemetryService {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), CAMS_FETCH_TIMEOUT_MS);
 
-      const response = await fetch(url, {
-        signal: controller.signal,
-        headers: { Accept: 'application/json' },
-      });
-
+      let response: Response;
+      try {
+        response = await fetch(url, {
+          signal: controller.signal,
+          headers: { Accept: 'application/json' },
+        });
+      } catch {
+        clearTimeout(timeoutId);
+        // Timeout (AbortError) or network failure: route to calibrated baseline
+        const fallback = this.getCalibratedBaseline(cityId, cityName, lat, lon);
+        globalTelemetryCache.set(cacheKey, fallback);
+        return fallback;
+      }
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new Error(`Open-Meteo API returned HTTP ${response.status}`);
+        // HTTP status error (e.g. 500 / 503 / 429): route to calibrated baseline
+        const fallback = this.getCalibratedBaseline(cityId, cityName, lat, lon);
+        globalTelemetryCache.set(cacheKey, fallback);
+        return fallback;
       }
 
-      const data = (await response.json()) as OpenMeteoCurrentResponse;
-      const current = data.current;
+      let data: OpenMeteoCurrentResponse;
+      try {
+        data = (await response.json()) as OpenMeteoCurrentResponse;
+      } catch {
+        // Unparseable JSON stream: route to calibrated baseline
+        const fallback = this.getCalibratedBaseline(cityId, cityName, lat, lon);
+        globalTelemetryCache.set(cacheKey, fallback);
+        return fallback;
+      }
 
-      if (!current) {
-        throw new Error('Malformed Open-Meteo payload');
+      const current = data?.current;
+      if (!current || typeof current !== 'object') {
+        // Malformed payload schema: route to calibrated baseline
+        const fallback = this.getCalibratedBaseline(cityId, cityName, lat, lon);
+        globalTelemetryCache.set(cacheKey, fallback);
+        return fallback;
       }
 
       const pollutants: PollutantReadings = {
