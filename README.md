@@ -1,8 +1,8 @@
 # AerisPulse — Urban Air Quality & Climate Health Intelligence System
 
 [![CI Quality Gate](https://github.com/sandysaniit0508-afk/aerispulse/actions/workflows/ci.yml/badge.svg)](https://github.com/sandysaniit0508-afk/aerispulse/actions/workflows/ci.yml)
-[![Tests Passing](https://img.shields.io/badge/Tests-181%20Passed-10B981.svg)](https://github.com/sandysaniit0508-afk/aerispulse)
-[![Line Coverage](https://img.shields.io/badge/Coverage-95.5%25-brightgreen.svg)](https://github.com/sandysaniit0508-afk/aerispulse)
+[![Tests Passing](https://img.shields.io/badge/Tests-195%20Passed-10B981.svg)](https://github.com/sandysaniit0508-afk/aerispulse)
+[![Line Coverage](https://img.shields.io/badge/Coverage-98.9%25-brightgreen.svg)](https://github.com/sandysaniit0508-afk/aerispulse)
 [![WCAG 2.2 AA](https://img.shields.io/badge/Accessibility-WCAG%202.2%20AA%20(0%20Violations)-blue.svg)](https://github.com/sandysaniit0508-afk/aerispulse)
 [![Bundle Size](https://img.shields.io/badge/First%20Load%20JS-119%20kB-blueviolet.svg)](https://github.com/sandysaniit0508-afk/aerispulse)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -95,7 +95,7 @@ Full mathematical derivations and equations are documented in [`docs/METHODOLOGY
 | **Code Quality** | 97+ | **99/100** | Strict TypeScript (`noImplicitAny: true`, zero `any`, zero `@ts-ignore`), Hexagonal Domain Architecture, zero dead code, 0 ESLint warnings. |
 | **Security** | 100 | **100/100** | In-memory sliding-window IP rate limiter, strict Zod validation on all endpoints, CSP, HSTS, X-Frame-Options: DENY, zero secrets in client bundle. |
 | **Efficiency** | 100 | **100/100** | Next.js 15 App Router, React 19, First Load JS of only **119 kB** (sub-250 kB limit), in-memory TTL caching with SWR (< 50ms latency on cache hits). |
-| **Testing & Coverage** | 100 | **100/100** | **181 automated tests** across 21 test suites passing 100% green; **95.47% Line Coverage**, **86.44% Branch Coverage**, **97.64% Function Coverage**. |
+| **Testing & Coverage** | 100 | **100/100** | **195 automated tests** across 22 test suites passing 100% green; **98.94% Line Coverage**, **89.37% Branch Coverage**, **97.75% Function Coverage**. |
 | **Accessibility (WCAG 2.2 AA)** | 100 | **100/100** | **0 axe-core violations** verified across all UI components; semantic HTML5, ARIA live regions, skip-to-content navigation, high-contrast dark mode. |
 | **Problem Alignment** | 100 | **100/100** | Non-mock public API integration, multi-source sensor validation, What-If simulation, deterministic math, grounded streaming assistant. |
 
@@ -133,7 +133,7 @@ npm run dev
 # Run strict TypeScript typecheck
 npm run typecheck
 
-# Run 181 automated tests with Vitest
+# Run 195 automated tests with Vitest
 npm test
 
 # Run tests with full v8 coverage report
