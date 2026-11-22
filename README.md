@@ -11,7 +11,7 @@
 > Hyper-localized urban atmospheric telemetry, deterministic epidemiological dosage models, and grounded zero-downtime GenAI action intelligence for climate-vulnerable megacities.
 
 🌐 **Production Deployment:** [https://aerispulse.vercel.app](https://aerispulse.vercel.app)  
-📺 **HD Walkthrough Video:** [https://aerispulse.vercel.app/walkthrough.mp4](https://aerispulse.vercel.app/walkthrough.mp4)  
+📺 **HD Walkthrough Video:** [Google Drive HD Walkthrough Video](https://drive.google.com/drive/folders/1DaLQHkMnUkQQgDDpWsJAlXQ6atid6hmp?usp=sharing)  
 📦 **GitHub Repository:** [https://github.com/sandysaniit0508-afk/aerispulse](https://github.com/sandysaniit0508-afk/aerispulse)
 
 ---

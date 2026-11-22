@@ -18,7 +18,7 @@ PUBLIC GITHUB REPOSITORY:
 https://github.com/sandysaniit0508-afk/aerispulse
 
 DEMO WALKTHROUGH VIDEO LINK:
-https://aerispulse.vercel.app/walkthrough.mp4 (High-Definition 1080p H.264)
+https://drive.google.com/drive/folders/1DaLQHkMnUkQQgDDpWsJAlXQ6atid6hmp?usp=sharing (High-Definition 1080p H.264)
 
 TECHNICAL STACK:
 - Frontend & Full-Stack: Next.js 15 (App Router), React 19, TypeScript (Strict, zero `any`), Tailwind CSS
