@@ -26,7 +26,6 @@ dist/
 
 # Recordings, Videos, Media & Screenshots (Keeps repo strictly < 10 MB)
 recordings/
-linkedin_assets/
 *.mp4
 *.webm
 *.mov
