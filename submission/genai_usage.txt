@@ -1,0 +1,5 @@
+AerisPulse implements real, visible GenAI using Google Gemini with structured output schemas and zero-downtime resilience:
+1. Structured Action Planning: Gemini 1.5 Flash is invoked via @google/generative-ai with responseMimeType: "application/json" enforcing a strict Zod ActionPlanSchema (summary, compositeRiskLevel, and categorized actionable items with quantified impact metrics).
+2. Deterministic Separation: Prompts inject pre-calculated EPA/WHO indices into structured XML context tags (<grounding_telemetry>). Gemini explains and contextualizes; TypeScript computes all numbers.
+3. Candidate Failover & Fallback Engine: If the API key is unconfigured, rate-limited, or schema validation throws, execution fails over seamlessly (<10ms) to FallbackActionPlanService.
+4. Grounded SSE Streaming Chat: /api/chat delivers token-by-token streaming responses isolated by XML delimiters to neutralize prompt injections, providing localized pulmonology advice in English, Tamil, and Hindi.
