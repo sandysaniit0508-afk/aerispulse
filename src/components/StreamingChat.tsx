@@ -3,7 +3,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { TelemetryData, SupportedLanguage, ChatMessage } from '@/domain/types';
 import { TRANSLATIONS } from '@/domain/i18n';
-import { Bot, User, Send, Sparkles, AlertCircle } from 'lucide-react';
+import { Bot, AlertCircle } from 'lucide-react';
+import { ChatMessageList } from './ChatMessageList';
+import { ChatInputBar } from './ChatInputBar';
+import { consumeChatStream } from './chat-stream-consumer';
 
 interface StreamingChatProps {
   telemetry: TelemetryData | null;
@@ -94,38 +97,16 @@ export const StreamingChat: React.FC<StreamingChatProps> = ({
       }
 
       const reader = response.body.getReader();
-      const decoder = new TextDecoder();
       let accumulated = '';
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunkText = decoder.decode(value, { stream: true });
-        const lines = chunkText.split('\n');
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const rawData = line.replace('data: ', '').trim();
-            if (rawData === '[DONE]') {
-              break;
-            }
-            try {
-              const parsed = JSON.parse(rawData) as { chunk?: string };
-              if (parsed.chunk) {
-                accumulated += parsed.chunk;
-                setMessages((prev) =>
-                  prev.map((msg) =>
-                    msg.id === assistantMsgId ? { ...msg, content: accumulated } : msg
-                  )
-                );
-              }
-            } catch {
-              // Ignore non-json chunk lines
-            }
-          }
-        }
-      }
+      await consumeChatStream(reader, (chunk) => {
+        accumulated += chunk;
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantMsgId ? { ...msg, content: accumulated } : msg
+          )
+        );
+      });
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : 'Chat stream error';
       setStreamError(errMsg);
@@ -175,62 +156,11 @@ export const StreamingChat: React.FC<StreamingChatProps> = ({
       </div>
 
       {/* Messages Stream Container */}
-      <div
-        className="flex-1 overflow-y-auto space-y-3.5 pr-1.5 focus:outline-none"
-        tabIndex={0}
-        aria-live="polite"
-        aria-label="Conversation messages"
-      >
-        {messages.map((msg) => {
-          const isUser = msg.role === 'user';
-          return (
-            <div
-              key={msg.id}
-              className={`flex items-start space-x-2.5 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}
-            >
-              <div
-                className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                  isUser
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-                }`}
-              >
-                {isUser ? (
-                  <User className="w-4 h-4" aria-hidden="true" />
-                ) : (
-                  <Sparkles className="w-4 h-4 text-blue-500" aria-hidden="true" />
-                )}
-              </div>
-
-              <div
-                className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-2.5 text-xs sm:text-sm leading-relaxed ${
-                  isUser
-                    ? 'bg-blue-600 text-white rounded-br-xs'
-                    : 'bg-slate-100 dark:bg-slate-800/80 text-slate-900 dark:text-slate-100 rounded-bl-xs'
-                }`}
-              >
-                {msg.content === '' && isStreaming ? (
-                  <div className="flex items-center space-x-1 py-1">
-                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" />
-                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]" />
-                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:0.4s]" />
-                  </div>
-                ) : (
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
-                )}
-                <span
-                  className={`block text-[10px] mt-1 text-right ${
-                    isUser ? 'text-blue-200' : 'text-slate-400 dark:text-slate-500'
-                  }`}
-                >
-                  {msg.timestamp}
-                </span>
-              </div>
-            </div>
-          );
-        })}
-        <div ref={messagesEndRef} />
-      </div>
+      <ChatMessageList
+        messages={messages}
+        isStreaming={isStreaming}
+        messagesEndRef={messagesEndRef}
+      />
 
       {/* Error alert if any */}
       {streamError && (
@@ -240,47 +170,17 @@ export const StreamingChat: React.FC<StreamingChatProps> = ({
         </div>
       )}
 
-      {/* Quick Prompts */}
-      <div className="pt-2 pb-2 flex flex-wrap gap-1.5" role="toolbar" aria-label="Quick suggestion queries">
-        {quickPrompts.map((prompt, idx) => (
-          <button
-            key={idx}
-            type="button"
-            onClick={() => handleSend(prompt)}
-            disabled={isStreaming}
-            className="text-[11px] px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
-          >
-            {prompt}
-          </button>
-        ))}
-      </div>
-
-      {/* Input Field */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSend();
-        }}
-        className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center space-x-2"
-      >
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder={t.chatPlaceholder}
-          disabled={isStreaming || !telemetry}
-          aria-label={t.chatPlaceholder}
-          className="flex-1 px-3.5 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-60"
-        />
-        <button
-          type="submit"
-          disabled={!input.trim() || isStreaming || !telemetry}
-          aria-label={t.sendChat}
-          className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-xs transition-colors disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-        >
-          <Send className="w-4 h-4" aria-hidden="true" />
-        </button>
-      </form>
+      {/* Quick Prompts & Input Bar */}
+      <ChatInputBar
+        input={input}
+        setInput={setInput}
+        isStreaming={isStreaming}
+        canSend={Boolean(telemetry)}
+        quickPrompts={quickPrompts}
+        placeholder={t.chatPlaceholder}
+        sendLabel={t.sendChat}
+        onSend={handleSend}
+      />
     </section>
   );
 };

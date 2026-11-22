@@ -4,6 +4,8 @@ import React from 'react';
 import { TelemetryData, SupportedLanguage } from '@/domain/types';
 import { TRANSLATIONS } from '@/domain/i18n';
 import { Activity, AlertTriangle, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { getAqiColor } from './telemetry-utils';
+import { PollutantGrid } from './PollutantGrid';
 
 interface TelemetryCardProps {
   telemetry: TelemetryData | null;
@@ -34,15 +36,6 @@ export const TelemetryCard: React.FC<TelemetryCardProps> = ({
       </div>
     );
   }
-
-  const getAqiColor = (aqi: number) => {
-    if (aqi <= 50) return { bg: 'bg-emerald-500', text: 'text-emerald-700 dark:text-emerald-300', badge: 'bg-emerald-100 dark:bg-emerald-950/80 border-emerald-300 dark:border-emerald-800' };
-    if (aqi <= 100) return { bg: 'bg-amber-500', text: 'text-amber-700 dark:text-amber-300', badge: 'bg-amber-100 dark:bg-amber-950/80 border-amber-300 dark:border-amber-800' };
-    if (aqi <= 150) return { bg: 'bg-orange-500', text: 'text-orange-700 dark:text-orange-300', badge: 'bg-orange-100 dark:bg-orange-950/80 border-orange-300 dark:border-orange-800' };
-    if (aqi <= 200) return { bg: 'bg-red-500', text: 'text-red-700 dark:text-red-300', badge: 'bg-red-100 dark:bg-red-950/80 border-red-300 dark:border-red-800' };
-    if (aqi <= 300) return { bg: 'bg-purple-600', text: 'text-purple-700 dark:text-purple-300', badge: 'bg-purple-100 dark:bg-purple-950/80 border-purple-300 dark:border-purple-800' };
-    return { bg: 'bg-rose-900', text: 'text-rose-700 dark:text-rose-300', badge: 'bg-rose-100 dark:bg-rose-950/80 border-rose-300 dark:border-rose-800' };
-  };
 
   const aqiStyle = getAqiColor(telemetry.usAqi);
   const isDiscrepant = telemetry.validationStatus !== 'VERIFIED';
@@ -175,36 +168,7 @@ export const TelemetryCard: React.FC<TelemetryCardProps> = ({
       </div>
 
       {/* Detailed Pollutant Grid */}
-      <div>
-        <h3 className="text-xs font-semibold tracking-wide uppercase text-slate-500 dark:text-slate-400 mb-2.5">
-          Atmospheric Chemical Concentration Matrix (µg/m³)
-        </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
-          {[
-            { label: 'PM2.5', value: telemetry.pollutants.pm25, unit: 'µg/m³', desc: 'Fine Aerosol' },
-            { label: 'PM10', value: telemetry.pollutants.pm10, unit: 'µg/m³', desc: 'Coarse Dust' },
-            { label: 'NO₂', value: telemetry.pollutants.no2, unit: 'µg/m³', desc: 'Combustion Gas' },
-            { label: 'SO₂', value: telemetry.pollutants.so2, unit: 'µg/m³', desc: 'Industrial SOx' },
-            { label: 'O₃', value: telemetry.pollutants.o3, unit: 'µg/m³', desc: 'Surface Ozone' },
-            { label: 'CO', value: telemetry.pollutants.co, unit: 'µg/m³', desc: 'Carbon Monoxide' },
-          ].map((item) => (
-            <div
-              key={item.label}
-              className="p-3 rounded-lg bg-slate-100/60 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800"
-            >
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                {item.label}
-              </span>
-              <div className="text-base font-extrabold text-slate-900 dark:text-white mt-0.5">
-                {item.value}
-              </div>
-              <span className="text-[10px] text-slate-500 dark:text-slate-400 block">
-                {item.desc}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
+      <PollutantGrid pollutants={telemetry.pollutants} />
     </section>
   );
 };
